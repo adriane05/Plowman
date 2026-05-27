@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Letter For You 🐰</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --sage:     #6b8f71;
+  --sage-lt:  #a5c9a8;
+  --sage-pale:#e8f2e9;
+  --sage-deep:#3a5c3f;
+  --cream:    #faf7f0;
+  --gold:     #c9a84c;
+  --ink:      #2c3e2f;
+  --paper:    #fffef8;
+  --line:     #e2edd3;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--sage-pale);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 20% 10%, #d6e8d8 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 85% 90%, #ddeede 0%, transparent 55%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Lora', serif;
+  overflow-x: hidden;
+  padding: 40px 16px 60px;
+}
+
+/* ── floating background elements ── */
+.bg-float { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.fb {
+  position:absolute; font-size:18px;
+  animation: fbRise linear infinite;
+  opacity:0;
+}
+@keyframes fbRise {
+  0%   { opacity:0; transform:translateY(0) rotate(-8deg) scale(0.8); }
+  10%  { opacity:0.4; }
+  90%  { opacity:0.2; }
+  100% { opacity:0; transform:translateY(-95vh) rotate(8deg) scale(1.1); }
+}
+
+/* ── confetti ── */
+.confetti-wrap { position:fixed; inset:0; pointer-events:none; z-index:999; overflow:hidden; }
+.cp {
+  position:absolute; top:-14px;
+  animation: cpFall linear forwards;
+}
+@keyframes cpFall {
+  to { transform:translateY(110vh) rotate(720deg); opacity:0; }
+}
+
+/* ── hint ── */
+.hint {
+  font-family:'Caveat',cursive;
+  font-size:20px;
+  color: var(--sage);
+  margin-bottom:24px;
+  z-index:1; position:relative;
+  animation: hintPulse 2.5s ease-in-out infinite;
+  letter-spacing: 0.02em;
+}
+@keyframes hintPulse {
+  0%,100%{ opacity:0.55; transform:translateY(0); }
+  50%    { opacity:1;    transform:translateY(-3px); }
+}
+
+/* ── scene ── */
+.scene-wrapper {
+  position:relative; width:400px; height:290px;
+  display:flex; align-items:flex-end; justify-content:center;
+  z-index:1;
+}
+.scene {
+  position:absolute; bottom:0;
+  width:400px; height:270px;
+  cursor:pointer; perspective:900px;
+}
+.envelope { width:100%; height:100%; position:relative;
+  filter: drop-shadow(0 18px 36px rgba(60,100,65,0.22)); }
+
+.env-body {
+  position:absolute; bottom:0;
+  width:400px; height:240px;
+  background: linear-gradient(155deg, var(--paper), #f5f9f0);
+  border-radius:8px 8px 18px 18px;
+  border:2px solid var(--sage-lt);
+}
+.env-back-flap {
+  position:absolute; top:0; left:0;
+  width:400px; height:168px;
+  background: linear-gradient(180deg, #c1dfc4, #dceedd);
+  clip-path:polygon(0 0, 50% 122px, 100% 0);
+  border-radius:8px 8px 0 0;
+}
+.env-left {
+  position:absolute; bottom:0; left:0;
+  border-style:solid;
+  border-width:0 0 130px 200px;
+  border-color:transparent transparent #d4e8d6 transparent;
+  z-index:2;
+}
+.env-right {
+  position:absolute; bottom:0; right:0;
+  border-style:solid;
+  border-width:130px 0 0 200px;
+  border-color:transparent transparent transparent #bed9c0;
+  z-index:2;
+}
+.env-front-flap {
+  position:absolute; top:42px; left:0;
+  width:400px; height:168px;
+  background: linear-gradient(180deg, #dceedd, #c1dfc4);
+  clip-path:polygon(0 0, 50% 122px, 100% 0);
+  border-top:2px solid var(--sage-lt);
+  border-radius:8px 8px 0 0;
+  z-index:3;
+  transform-origin:top center;
+  transform:rotateX(0deg);
+  transition:transform 0.85s cubic-bezier(0.4,0,0.2,1);
+}
+.env-front-flap.open { transform:rotateX(-178deg); }
+
+.seal {
+  position:absolute; top:118px; left:50%;
+  transform:translateX(-50%);
+  z-index:4; font-size:36px; line-height:1;
+  transition: opacity 0.3s 0.2s, transform 0.3s 0.2s;
+}
+.seal.gone { opacity:0; transform:translateX(-50%) scale(0.3); }
+
+/* ── AUTHOR MODE banner ── */
+.author-banner {
+  display:none;
+  position:fixed; top:0; left:0; right:0;
+  background: var(--gold);
+  color:#fff;
+  text-align:center;
+  padding:8px 16px;
+  font-family:'Caveat',cursive;
+  font-size:17px;
+  letter-spacing:0.03em;
+  z-index:500;
+  gap:12px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.author-banner.show { display:flex; }
+.author-banner strong { font-weight:700; }
+.btn-seal {
+  background:#fff;
+  color: var(--sage-deep);
+  border:none; border-radius:20px;
+  padding:4px 14px;
+  font-family:'Caveat',cursive; font-size:16px;
+  font-weight:700; cursor:pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow:0 2px 8px rgba(0,0,0,0.12);
+}
+.btn-seal:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.18); }
+
+/* ── overlay ── */
+.doc-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(180,210,185,0.55);
+  backdrop-filter:blur(7px);
+  z-index:100;
+  align-items:flex-start; justify-content:center;
+  overflow-y:auto;
+  padding:28px 16px 56px;
+}
+.doc-overlay.active { display:flex; }
+
+/* ── paper ── */
+.doc-page {
+  background: var(--paper);
+  width:100%; max-width:660px;
+  min-height:820px;
+  border-radius:3px;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.04),
+    0 4px 16px rgba(0,0,0,0.09),
+    0 12px 48px rgba(0,0,0,0.10),
+    4px 0 0 0 var(--sage-lt) inset;
+  position:relative;
+  padding:64px 72px 80px 80px;
+  font-family:'Caveat',cursive;
+  font-size:23px;
+  color: var(--ink);
+  line-height:2;
+  overflow:hidden;
+}
+
+/* lined paper */
+.doc-page::before {
+  content:'';
+  position:absolute; inset:64px 0 0;
+  background-image: repeating-linear-gradient(
+    transparent, transparent 46px, var(--line) 46px, var(--line) 47px
+  );
+  background-position:0 38px;
+  pointer-events:none; z-index:0;
+}
+/* left red margin line */
+.doc-page::after {
+  content:'';
+  position:absolute; top:0; left:68px; bottom:0;
+  width:2px; background:#f0b8b8; opacity:0.5;
+  pointer-events:none; z-index:0;
+}
+
+.doc-corner { position:absolute; font-size:26px; opacity:0.28; z-index:0; }
+.doc-corner.tl { top:14px; left:18px; }
+.doc-corner.tr { top:14px; right:18px; }
+.doc-corner.br { bottom:18px; right:18px; }
+
+/* close */
+.doc-close {
+  position:sticky; top:0;
+  float:right;
+  margin:-44px -54px 8px 0;
+  background: var(--sage-lt);
+  border:none; border-radius:50%;
+  width:38px; height:38px;
+  font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  color: var(--ink); z-index:10;
+  transition: background 0.2s, transform 0.15s;
+}
+.doc-close:hover { background:var(--sage); color:#fff; transform:rotate(90deg); }
+
+/* toolbar — only visible in author mode */
+.doc-toolbar {
+  position:sticky; top:0;
+  background: #f4f9f0;
+  border:1px solid #cfe0d0;
+  border-radius:8px;
+  padding:8px 10px;
+  margin-bottom:30px;
+  display:none; /* hidden by default; shown in author mode */
+  flex-wrap:wrap; gap:6px; align-items:center;
+  z-index:5;
+  box-shadow:0 2px 10px rgba(0,0,0,0.06);
+}
+.doc-toolbar.author-visible { display:flex; }
+
+.tb-btn {
+  background:#fff; border:1.5px solid #cfe0d0;
+  border-radius:6px; padding:4px 10px;
+  font-size:13px; font-family:'Lora',serif;
+  cursor:pointer; color: var(--sage-deep);
+  transition:background 0.15s, border-color 0.15s;
+  display:flex; align-items:center; gap:4px;
+}
+.tb-btn:hover { background:var(--sage-pale); border-color:var(--sage); }
+.tb-sep { width:1px; height:20px; background:#cfe0d0; margin:0 2px; }
+.tb-label { font-size:12px; color:#7a9e80; font-family:'Lora',serif; }
+.tb-select {
+  background:#fff; border:1.5px solid #cfe0d0;
+  border-radius:6px; padding:4px 6px;
+  font-size:13px; font-family:'Lora',serif;
+  color: var(--sage-deep); cursor:pointer; outline:none;
+}
+.tb-color {
+  width:28px; height:28px; border-radius:50%;
+  border:1.5px solid #cfe0d0; cursor:pointer;
+  padding:0; overflow:hidden; background:none;
+}
+
+/* letter content */
+.doc-content {
+  position:relative; z-index:1;
+  min-height:680px;
+  outline:none;
+  caret-color: var(--sage);
+  white-space:pre-wrap;
+}
+.doc-content[contenteditable="false"] { cursor:default; user-select:text; }
+.doc-content:empty::before {
+  content:'Start writing your letter here… 🐰';
+  color:#c0d0c2; pointer-events:none;
+}
+.doc-content img {
+  max-width:100%; border-radius:8px;
+  margin:12px 0; display:block;
+  border:2px solid #cfe0d0;
+}
+
+/* read-only ribbon */
+.readonly-ribbon {
+  display:none;
+  position:absolute; top:18px; right:-28px;
+  background:var(--gold);
+  color:#fff;
+  font-family:'Caveat',cursive; font-size:13px; font-weight:700;
+  letter-spacing:0.06em;
+  padding:4px 40px;
+  transform:rotate(45deg);
+  z-index:20;
+  pointer-events:none;
+  opacity:0.85;
+}
+.readonly-ribbon.show { display:block; }
+
+/* insert modal */
+.insert-modal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.28);
+  z-index:200; align-items:center; justify-content:center;
+}
+.insert-modal.active { display:flex; }
+.insert-box {
+  background:#fff; border-radius:16px;
+  padding:28px 24px 20px; width:340px;
+  box-shadow:0 12px 48px rgba(0,0,0,0.18);
+  border-top:4px solid var(--sage-lt);
+}
+.insert-box h4 { font-family:'Caveat',cursive; font-size:17px; color:var(--ink); margin-bottom:12px; }
+.insert-box input {
+  width:100%; border:1.5px solid var(--sage-lt);
+  border-radius:8px; padding:8px 10px;
+  font-size:14px; font-family:'Lora',serif;
+  color:var(--ink); background:#f9fbf7;
+  outline:none; margin-bottom:12px;
+}
+.insert-box input:focus { border-color:var(--sage); }
+.insert-row { display:flex; gap:8px; }
+.insert-row button {
+  flex:1; padding:8px; border-radius:8px; border:none;
+  font-family:'Caveat',cursive; font-size:16px; font-weight:600;
+  cursor:pointer; transition:opacity 0.15s;
+}
+.btn-confirm { background:var(--sage-lt); color:var(--ink); }
+.btn-cancel  { background:var(--sage-pale); color:var(--sage-deep); }
+.btn-confirm:hover,.btn-cancel:hover { opacity:0.82; }
+
+/* lock modal */
+.lock-modal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.32);
+  z-index:300; align-items:center; justify-content:center;
+}
+.lock-modal.active { display:flex; }
+.lock-box {
+  background:#fff; border-radius:20px;
+  padding:36px 28px 28px; width:360px; text-align:center;
+  box-shadow:0 16px 60px rgba(0,0,0,0.2);
+  border-top:5px solid var(--gold);
+}
+.lock-box .lock-icon { font-size:48px; margin-bottom:12px; }
+.lock-box h3 {
+  font-family:'Caveat',cursive; font-size:26px;
+  color:var(--ink); margin-bottom:8px;
+}
+.lock-box p {
+  font-family:'Lora',serif; font-size:14px;
+  color:#5a7560; margin-bottom:20px; line-height:1.6;
+}
+.lock-box input {
+  width:100%; border:1.5px solid var(--sage-lt);
+  border-radius:10px; padding:10px 14px;
+  font-size:15px; font-family:'Lora',serif;
+  color:var(--ink); background:#f9fbf7;
+  outline:none; margin-bottom:10px; text-align:center;
+  letter-spacing:0.08em;
+}
+.lock-box input:focus { border-color:var(--gold); }
+.lock-box .err { color:#c0392b; font-size:13px; font-family:'Lora',serif; min-height:18px; margin-bottom:8px; }
+.lock-box-row { display:flex; gap:10px; }
+.lock-box-row button {
+  flex:1; padding:10px;
+  border-radius:10px; border:none;
+  font-family:'Caveat',cursive; font-size:18px; font-weight:700;
+  cursor:pointer; transition:opacity 0.15s, transform 0.1s;
+}
+.btn-lock-confirm { background:var(--gold); color:#fff; }
+.btn-lock-cancel  { background:var(--sage-pale); color:var(--sage-deep); }
+.btn-lock-confirm:hover { opacity:0.88; transform:scale(1.02); }
+.btn-lock-cancel:hover  { opacity:0.82; }
+
+/* key prompt modal */
+.key-modal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.28);
+  z-index:300; align-items:center; justify-content:center;
+}
+.key-modal.active { display:flex; }
+/* reuse lock-box styles */
+</style>
+</head>
+<body>
+
+<div class="bg-float" id="bgFloat"></div>
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<!-- Author mode banner -->
+<div class="author-banner" id="authorBanner">
+  <strong>✏️ Author Mode</strong> — You are writing this letter. The recipient won't be able to edit it.
+  <button class="btn-seal" onclick="sealLetter()">💌 Seal & Create Digital Letter</button>
+</div>
+
+<p class="hint" id="hint">🐰 tap the envelope to open your letter!</p>
+
+<div class="scene-wrapper">
+  <div class="scene" id="envelopeScene" onclick="handleEnvelopeClick()">
+    <div class="envelope">
+      <div class="env-back-flap"></div>
+      <div class="env-body"></div>
+      <div class="env-left"></div>
+      <div class="env-right"></div>
+      <div class="env-front-flap" id="flap"></div>
+      <div class="seal" id="seal">🐰</div>
+    </div>
+  </div>
+</div>
+
+<!-- Document overlay -->
+<div class="doc-overlay" id="docOverlay">
+  <div class="doc-page">
+    <span class="doc-corner tl">🌿</span>
+    <span class="doc-corner tr">🐇</span>
+    <span class="doc-corner br">🌱</span>
+    <div class="readonly-ribbon" id="readonlyRibbon">READ ONLY</div>
+
+    <button class="doc-close" onclick="closeDoc()" title="close">✕</button>
+
+    <!-- toolbar (author only) -->
+    <div class="doc-toolbar" id="docToolbar">
+      <span class="tb-label">font</span>
+      <select class="tb-select" id="fontSelect" onchange="applyFont(this.value)">
+        <option value="'Caveat',cursive" selected>Handwritten</option>
+        <option value="'Lora',serif">Lora Serif</option>
+        <option value="Georgia,serif">Georgia</option>
+        <option value="monospace">Mono</option>
+      </select>
+      <select class="tb-select" id="sizeSelect" onchange="applySize(this.value)">
+        <option value="17px">Small</option>
+        <option value="23px" selected>Normal</option>
+        <option value="29px">Large</option>
+        <option value="36px">Huge</option>
+      </select>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="fmt('bold')"><b>B</b></button>
+      <button class="tb-btn" onclick="fmt('italic')"><i>I</i></button>
+      <button class="tb-btn" onclick="fmt('underline')"><u>U</u></button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="fmt('justifyLeft')">⬅</button>
+      <button class="tb-btn" onclick="fmt('justifyCenter')">↔</button>
+      <button class="tb-btn" onclick="fmt('justifyRight')">➡</button>
+      <div class="tb-sep"></div>
+      <input type="color" class="tb-color" id="textColor" value="#2c3e2f" title="Text color" oninput="applyColor(this.value)">
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="openInsert()">📷 insert photo</button>
+    </div>
+
+    <div class="doc-content" id="docContent" contenteditable="true" spellcheck="true">Hey bestie! 🐰
+
+I just wanted to write you a little something because you deserve it.
+
+You're literally one of the best people I know and I'm so glad we're friends!! 🌿✨
+
+Ok bye 🐇</div>
+  </div>
+</div>
+
+<!-- Insert file modal -->
+<div class="insert-modal" id="insertModal">
+  <div class="insert-box">
+    <h4 id="insertTitle">Insert image</h4>
+    <!-- drag-drop zone -->
+    <div id="dropZone" style="
+      border:2px dashed var(--sage-lt);
+      border-radius:12px;
+      padding:24px 16px;
+      text-align:center;
+      cursor:pointer;
+      font-family:'Caveat',cursive;
+      font-size:17px;
+      color:var(--sage);
+      background:#f9fbf7;
+      transition:background 0.2s, border-color 0.2s;
+      margin-bottom:10px;
+    " onclick="document.getElementById('fileInput').click()"
+       ondragover="event.preventDefault();this.style.background='#e8f5e9';this.style.borderColor='var(--sage)'"
+       ondragleave="this.style.background='#f9fbf7';this.style.borderColor='var(--sage-lt)'"
+       ondrop="handleDrop(event)">
+      <div style="font-size:32px;margin-bottom:6px" id="dropIcon">📁</div>
+      <div id="dropLabel">Click or drag & drop your photo / GIF here</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*,.gif" style="display:none" onchange="handleFileSelect(this)">
+    <div class="insert-row" style="margin-top:4px">
+      <button class="btn-cancel" onclick="closeInsert()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+    <h3>Author Access</h3>
+    <p>Enter your secret key to unlock editing.</p>
+    <input type="password" id="keyInput" placeholder="Secret key…" maxlength="64"
+           onkeydown="if(event.key==='Enter')confirmKey()">
+    <div class="err" id="keyErr"></div>
+    <div class="lock-box-row">
+      <button class="btn-lock-confirm" onclick="confirmKey()">Unlock ✏️</button>
+      <button class="btn-lock-cancel" onclick="closeKeyModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY   = 'bunny_letter_v1';
+const LETTER_SEALED = 'LETTER_SEALED';
+const CONTENT_KEY   = 'bunny_letter_content';
+
+let opened       = false;
+let isAuthor     = false;
+let isLocked     = false;
+let insertType   = 'photo';
+let savedRange   = null;
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+function init() {
+  const savedContent = localStorage.getItem(CONTENT_KEY);
+  const savedHash    = localStorage.getItem(LETTER_SEALED);
+
+  if (savedContent) {
+    document.getElementById('docContent').innerHTML = savedContent;
+  }
+
+  if (savedHash === 'true') {
+    // Letter has been locked — read-only mode
+    isLocked = true;
+    setReadOnly(true);
+  } else {
+    // No lock yet — author mode
+    isAuthor = true;
+    setAuthorMode(true);
+  }
+}
+
+function setAuthorMode(on) {
+  isAuthor = on;
+  document.getElementById('authorBanner').classList.toggle('show', on);
+  document.getElementById('docToolbar').classList.toggle('author-visible', on);
+  document.getElementById('docContent').contentEditable = on ? 'true' : 'false';
+  document.getElementById('readonlyRibbon').classList.toggle('show', !on);
+}
+
+function setReadOnly(on) {
+  document.getElementById('docContent').contentEditable = on ? 'false' : 'true';
+  document.getElementById('readonlyRibbon').classList.toggle('show', on);
+  document.getElementById('docToolbar').classList.remove('author-visible');
+  document.getElementById('authorBanner').classList.remove('show');
+}
+
+// ─── ENVELOPE ────────────────────────────────────────────────────────────────
+function handleEnvelopeClick() {
+  if (!opened) {
+    opened = true;
+    document.getElementById('hint').style.opacity = '0';
+    document.getElementById('flap').classList.add('open');
+    document.getElementById('seal').classList.add('gone');
+    setTimeout(() => {
+      launchConfetti();
+      setTimeout(() => {
+        document.getElementById('docOverlay').classList.add('active');
+      }, 320);
+    }, 720);
+  } else {
+    document.getElementById('docOverlay').classList.add('active');
+  }
+}
+
+function closeDoc() {
+  document.getElementById('docOverlay').classList.remove('active');
+  if (isAuthor) saveContent();
+}
+
+// ─── EDITING ─────────────────────────────────────────────────────────────────
+function fmt(cmd) {
+  document.getElementById('docContent').focus();
+  document.execCommand(cmd, false, null);
+}
+function applyFont(f) {
+  document.getElementById('docContent').style.fontFamily = f;
+  saveContent();
+}
+function applySize(s) {
+  document.getElementById('docContent').style.fontSize = s;
+  saveContent();
+}
+function applyColor(c) {
+  saveSelection();
+  document.getElementById('docContent').focus();
+  restoreSelection();
+  document.execCommand('foreColor', false, c);
+}
+function saveSelection() {
+  const sel = window.getSelection();
+  if (sel.rangeCount > 0) savedRange = sel.getRangeAt(0).cloneRange();
+}
+function restoreSelection() {
+  if (!savedRange) return;
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(savedRange);
+}
+
+function saveContent() {
+  if (!isAuthor) return;
+  localStorage.setItem(CONTENT_KEY, document.getElementById('docContent').innerHTML);
+}
+
+// auto-save on every keystroke in author mode
+document.getElementById('docContent').addEventListener('input', () => {
+  if (isAuthor) saveContent();
+});
+
+// ─── INSERT IMAGE ─────────────────────────────────────────────────────────────
+function openInsert(type) {
+  if (!isAuthor) return;
+  insertType = type;
+  document.getElementById('insertTitle').textContent =
+    '📷 Insert photo from your device';
+  saveSelection();
+  document.getElementById('insertModal').classList.add('active');
+}
+function closeInsert() {
+  document.getElementById('insertModal').classList.remove('active');
+}
+function confirmInsert() {
+  const url = document.getElementById('insertUrl').value.trim();
+  if (!url) { closeInsert(); return; }
+  const img = document.createElement('img');
+  img.src = url; img.alt = insertType;
+  const content = document.getElementById('docContent');
+  content.focus();
+  if (savedRange) {
+    restoreSelection();
+    const sel = window.getSelection();
+    sel.deleteFromDocument();
+    const r = sel.getRangeAt(0);
+    r.insertNode(document.createElement('br'));
+    r.insertNode(img);
+    const nr = document.createRange();
+    nr.setStartAfter(img); nr.collapse(true);
+    sel.removeAllRanges(); sel.addRange(nr);
+  } else {
+    content.appendChild(img);
+  }
+  saveContent();
+  closeInsert();
+}
+
+
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = document.createElement('img');
+    img.src = e.target.result;
+    img.alt = file.name;
+    const content = document.getElementById('docContent');
+    content.focus();
+    if (savedRange) {
+      restoreSelection();
+      const sel = window.getSelection();
+      if (sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(img);
+        range.setStartAfter(img);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } else {
+        content.appendChild(img);
+      }
+    } else {
+      content.appendChild(img);
+    }
+    saveContent();
+    closeInsert();
+    input.value='';
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  const zone = document.getElementById('dropZone');
+  zone.style.background='#f9fbf7';
+  const files = event.dataTransfer.files;
+  if(files && files[0]) {
+    document.getElementById('fileInput').files = files;
+    handleFileSelect(document.getElementById('fileInput'));
+  }
+}
+
+// ─── LOCK / SEAL ─────────────────────────────────────────────────────────────
+
+function sealLetter() {
+  if (!confirm('Seal this letter? Once sealed, it becomes read-only for recipients.')) return;
+  saveContent();
+  localStorage.setItem('LETTER_SEALED','true');
+  isAuthor = false;
+  isLocked = true;
+  setReadOnly(true);
+  showSealedToast();
+}
+
+// ─── CONFETTI ────────────────────────────────────────────────────────────────
+function launchConfetti() {
+  const colors = ['#a5d6a7','#81c784','#dcedc8','#c8e6c9','#fff9c4','#ffe082','#c9a84c'];
+  const emojis = ['🐰','🌿','✨','🍃','🌱','🐇'];
+  const wrap = document.getElementById('confettiWrap');
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'cp';
+    if (Math.random() > 0.5) {
+      p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      p.style.fontSize = '18px';
+    } else {
+      p.style.width = p.style.height = (Math.random()*8+5)+'px';
+      p.style.background = colors[Math.floor(Math.random()*colors.length)];
+      p.style.borderRadius = Math.random()>.5?'50%':'3px';
+    }
+    p.style.left = Math.random()*100+'vw';
+    p.style.animationDuration = (Math.random()*2+1.5)+'s';
+    p.style.animationDelay = (Math.random()*1.5)+'s';
+    wrap.appendChild(p);
+    setTimeout(()=>p.remove(), 5000);
+  }
+}
+
+// ─── BG FLOATERS ─────────────────────────────────────────────────────────────
+(function spawnFloaters(){
+  const wrap = document.getElementById('bgFloat');
+  const items = ['🐰','🐇','🌿','🍃','🌱','☘️','✨','🌾','💌'];
+  setInterval(()=>{
+    const b = document.createElement('div');
+    b.className = 'fb';
+    b.textContent = items[Math.floor(Math.random()*items.length)];
+    b.style.left = Math.random()*95+'vw';
+    b.style.bottom = '-24px';
+    const dur = Math.random()*10+9;
+    b.style.animationDuration = dur+'s';
+    b.style.fontSize = (Math.random()*12+12)+'px';
+    wrap.appendChild(b);
+    setTimeout(()=>b.remove(),(dur+0.5)*1000);
+  }, 1100);
+})();
+
+// ─── START ───────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
